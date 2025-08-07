@@ -2,8 +2,11 @@ package biojj.managerproductapi.domain.dto;
 
 import biojj.managerproductapi.domain.enums.Profile;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+
 import java.time.LocalDate;
 import java.util.Set;
 
@@ -22,10 +25,10 @@ public class UserDTO {
     private String password;
 
     @NotNull(message = "Status is required")
-    private Boolean status;
+    private Boolean status = true;
 
     private Set<Profile> profiles;
 
     @JsonFormat(pattern = "dd/MM/yyyy")
-    private LocalDate dataCreation;
+    private LocalDate dataCreation = LocalDate.now();
 }

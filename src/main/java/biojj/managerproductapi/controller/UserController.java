@@ -1,6 +1,8 @@
 package biojj.managerproductapi.controller;
 
 import biojj.managerproductapi.domain.dto.UserDTO;
+import biojj.managerproductapi.exception.DataIntegrityViolationException;
+import biojj.managerproductapi.exception.ObjectNotFoundException;
 import biojj.managerproductapi.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,36 +19,53 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<UserDTO> create(@Valid @RequestBody UserDTO userDTO) {
-        UserDTO createdUser = userService.save(userDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
+    public ResponseEntity<?> create(@Valid @RequestBody UserDTO userDTO) {
+        try {
+            UserDTO createdUser = userService.save(userDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
+        } catch (DataIntegrityViolationException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            throw new DataIntegrityViolationException(e.getMessage());
+        }
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserDTO> getById(@PathVariable Long id) {
-        UserDTO user = userService.getById(id);
-        return user != null
-                ? ResponseEntity.ok(user)
-                : ResponseEntity.notFound().build();
+    public ResponseEntity<?> getById(@PathVariable Long id) {
+        try {
+            UserDTO user = userService.getById(id);
+            if (user == null) {
+                throw new ObjectNotFoundException("Usuário não encontrado com ID: " + id);
+            }
+            return ResponseEntity.ok(user);
+        } catch (ObjectNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
     }
 
     @GetMapping("/email/{email}")
-    public ResponseEntity<UserDTO> getByEmail(@PathVariable String email) {
-        UserDTO user = userService.getByEmail(email);
-        return user != null
-                ? ResponseEntity.ok(user)
-                : ResponseEntity.notFound().build();
+    public ResponseEntity<?> getByEmail(@PathVariable String email) {
+        try {
+            UserDTO user = userService.getByEmail(email);
+            if (user == null) {
+                throw new ObjectNotFoundException("Usuário não encontrado com email: " + email);
+            }
+            return ResponseEntity.ok(user);
+        } catch (ObjectNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserDTO> update(
+    public ResponseEntity<?> update(
             @PathVariable Long id,
-            @Valid @RequestBody UserDTO userDTO) {
-
-        UserDTO updatedUser = userService.updateById(id, userDTO);
-        return updatedUser != null
-                ? ResponseEntity.ok(updatedUser)
-                : ResponseEntity.notFound().build();
+            @RequestBody UserDTO userDTO) {
+        try {
+            UserDTO updatedUser = userService.updateById(id, userDTO);
+            return ResponseEntity.ok(updatedUser);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @GetMapping
@@ -55,5 +74,17 @@ public class UserController {
             @RequestParam(defaultValue = "10") int size) {
         Page<UserDTO> users = userService.getAll(page, size);
         return ResponseEntity.ok(users);
+    }
+
+    @PostMapping(value = "/register")
+    public ResponseEntity<?> register(@Valid @RequestBody UserDTO userDTO) {
+        try {
+            UserDTO createdUser = userService.register(userDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
+        } catch (DataIntegrityViolationException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            throw new DataIntegrityViolationException(e.getMessage());
+        }
     }
 }
