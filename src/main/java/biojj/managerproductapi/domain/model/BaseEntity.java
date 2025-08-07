@@ -1,4 +1,4 @@
-package br.com.claro.catalogregulatoryoffers.domain.model;
+package biojj.managerproductapi.domain.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
