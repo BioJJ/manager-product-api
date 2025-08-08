@@ -7,11 +7,13 @@ import biojj.managerproductapi.domain.model.*;
 import biojj.managerproductapi.exception.ObjectNotFoundException;
 import biojj.managerproductapi.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -66,8 +68,41 @@ public class OrderService {
     }
 
     public OrderDTO getById(Long id) {
-        return orderRepository.findById(id)
-                .map(orderMapper::toDTO)
+        return orderRepository.findByIdWithItems(id)
+                .map(order -> {
+                    // Debug: Verifique se os itens estão sendo carregados
+                    System.out.println("Número de itens carregados: " +
+                            (order.getItems() != null ? order.getItems().size() : 0));
+
+                    OrderDTO dto = new OrderDTO();
+                    dto.setId(order.getId());
+                    dto.setBuyerId(order.getBuyer().getId());
+                    dto.setBuyerName(order.getBuyer().getName());
+                    dto.setSupplierId(order.getSupplier().getId());
+                    dto.setSupplierName(order.getSupplier().getName());
+                    dto.setOrderDate(order.getOrderDate());
+                    dto.setTotalAmount(order.getTotalAmount());
+                    dto.setStatus(order.getStatus().name());
+
+                    // Mapeamento manual dos itens
+                    if (order.getItems() != null) {
+                        dto.setItems(order.getItems().stream()
+                                .map(item -> {
+                                    OrderItemDTO itemDto = new OrderItemDTO();
+                                    itemDto.setProductId(item.getProduct().getId());
+                                    itemDto.setProductName(item.getProduct().getName());
+                                    itemDto.setQuantity(item.getQuantity());
+                                    itemDto.setUnitPrice(item.getUnitPrice());
+                                    itemDto.setTotalPrice(item.getTotalPrice());
+                                    return itemDto;
+                                })
+                                .collect(Collectors.toList()));
+                    } else {
+                        dto.setItems(Collections.emptyList());
+                    }
+
+                    return dto;
+                })
                 .orElse(null);
     }
 
