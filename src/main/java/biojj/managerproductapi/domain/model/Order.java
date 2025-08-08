@@ -27,7 +27,7 @@ public class Order extends BaseEntity {
 
     private LocalDateTime orderDate;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<OrderItem> items;
 
     @Column(precision = 10, scale = 2)
