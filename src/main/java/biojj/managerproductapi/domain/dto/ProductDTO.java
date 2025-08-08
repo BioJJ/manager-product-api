@@ -26,4 +26,6 @@ public class ProductDTO {
 
     @PositiveOrZero(message = "Stock quantity must be positive or zero")
     private Integer stockQuantity;
+
+    private SupplierDTO supplier;
 }

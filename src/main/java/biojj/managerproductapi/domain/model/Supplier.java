@@ -1,4 +1,3 @@
-// Supplier.java
 package biojj.managerproductapi.domain.model;
 
 import jakarta.persistence.*;
