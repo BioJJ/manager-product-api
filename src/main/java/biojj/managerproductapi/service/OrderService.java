@@ -7,7 +7,6 @@ import biojj.managerproductapi.domain.model.*;
 import biojj.managerproductapi.exception.ObjectNotFoundException;
 import biojj.managerproductapi.repository.*;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -106,8 +105,9 @@ public class OrderService {
                 .orElse(null);
     }
 
+    @Transactional(readOnly = true)
     public List<OrderDTO> getAll() {
-        return orderRepository.findAllWithBuyerAndSupplier().stream()
+        return orderRepository.findAllWithItems().stream()
                 .map(order -> {
                     OrderDTO dto = orderMapper.toDTO(order);
                     dto.setBuyerName(order.getBuyer().getName());
